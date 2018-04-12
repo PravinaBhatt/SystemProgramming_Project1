@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <arpa/inet.h> 
 
-void child(int s_des);
+void serviceClient(int s_des);
 int main(int argc, char *argv[]){
   int s_des, remote_c, p_num;
   socklen_t len;
@@ -34,13 +34,14 @@ int main(int argc, char *argv[]){
    remote_c=accept(s_des,(struct sockaddr*)&client_add,sizeof(c_add);
    printf("***Client is ready for communication***\n");
    if(!fork())
-   child(remote_c);
+   serviceClient(remote_c);
    close(remote_c);
   }
 }
 
-void child(int s_des){
+void serviceClient(int s_des){
   char message[255];
+  int client;
   struct c_add;
 
   while(1){
@@ -50,7 +51,13 @@ void child(int s_des){
    if(!read(s_des, message, 255)){
     close(s_des);
     fprintf(stderr,"Ooops!! Current client is busy now\nWaiting for a new client...\n");
-    
+    if ( dup2(client, 0) < 0 )
+    perror("Dup stdin");
+    if ( dup2(client, 1) < 0 )
+    perror("Dup stdout");
+    if ( dup2(client, 2) < 0 )
+    perror("Dup stderr");
+    system();
     exit(0);
    }
   }
