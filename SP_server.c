@@ -11,7 +11,7 @@
 
 void serviceClient(int s_des);
 int main(int argc, char *argv[]){
-  int s_des, remote_c, p_num;
+  int s_des, remote_c, p_Num;
   socklen_t len;
   struct sockaddr_in s_add,c_add;
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]){
   listen(s_des, 5);
 
   while(1){
-   remote_c=accept(s_des,(struct sockaddr*)&client_add,sizeof(c_add);
+   remote_c=accept(s_des,(struct sockaddr*)&c_add,sizeof(c_add));
    printf("***Client is ready for communication***\n");
    if(!fork())
    serviceClient(remote_c);
@@ -40,25 +40,30 @@ int main(int argc, char *argv[]){
 }
 
 void serviceClient(int s_des){
-  char message[255];
-  int client;
-  struct c_add;
+  char buff[255];
+  static int client;
+  struct sockaddr_in c_add;
 
   while(1){
-   fprintf(stderr, "Enter message for a client:\n");
-   fgets(message, 254, stdin);
-   write(s_des, message, strlen(message)+1);
-   if(!read(s_des, message, 255)){
-    close(s_des);
-    fprintf(stderr,"Ooops!! Current client is busy now\nWaiting for a new client...\n");
+  // fprintf(stderr, "Enter message for a client:\n");
+   //fgets(buff, 254, stdin);
+ //  if(!read(s_des, buff, 255)){
+  //  close(s_des);
+    //if(close(s_des)<0)
+    //fprintf(stderr,"Ooops!! Current client is busy now\nWaiting for a new client...\n");
     if ( dup2(client, 0) < 0 )
     perror("Dup stdin");
     if ( dup2(client, 1) < 0 )
     perror("Dup stdout");
     if ( dup2(client, 2) < 0 )
     perror("Dup stderr");
-    system();
+    read(0, buff, 255);
+    printf("Client: ");
+    printf("Connected: %s:%d\n", inet_ntoa(c_add.sin_addr), ntohs(c_add.sin_port));
+    puts(buff);
+    //buff[strlen(buff)]='\0';
+    write(stderr,system(buff), 1000);
     exit(0);
-   }
+   
   }
 }
