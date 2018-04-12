@@ -10,10 +10,11 @@
 #include <arpa/inet.h> 
 
 void serviceClient(int s_des);
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
   int s_des, remote_c, p_Num;
   socklen_t len;
-  struct sockaddr_in s_add,c_add;
+  struct sockaddr_in s_add;
 
   if(argc != 2){
    printf("Call model: %s <Port #>\n", argv[0]);
@@ -30,40 +31,55 @@ int main(int argc, char *argv[]){
   bind(s_des,(struct sockaddr*)&s_add,sizeof(s_add));
   listen(s_des, 5);
 
-  while(1){
-   remote_c=accept(s_des,(struct sockaddr*)&c_add,sizeof(c_add));
-   printf("***Client is ready for communication***\n");
-   if(!fork())
-   serviceClient(remote_c);
-   close(remote_c);
+  while(1)
+    {
+   write(2,"Waiting for Client....\n",strlen("Waiting for Client....\n"));
+   remote_c=accept(s_des,(struct sockaddr*)NULL,NULL);
+   if(remote_c < 0)
+    {
+        fprintf(stderr,"Some problem with accept.");
+        exit(0);
+    }
+    else
+    {
+        fprintf(stderr,"***New Client is ready for communication***....\n");
+        if(!fork())
+        {
+         serviceClient(remote_c);
+        }
+        else
+         {
+            close(remote_c);
+         }
+    }
   }
 }
 
-void serviceClient(int s_des){
+void serviceClient(int s_des)
+{
   char buff[255];
-  static int client;
-  struct sockaddr_in c_add;
 
-  while(1){
-  // fprintf(stderr, "Enter message for a client:\n");
-   //fgets(buff, 254, stdin);
- //  if(!read(s_des, buff, 255)){
-  //  close(s_des);
-    //if(close(s_des)<0)
-    //fprintf(stderr,"Ooops!! Current client is busy now\nWaiting for a new client...\n");
-    if ( dup2(client, 0) < 0 )
-    perror("Dup stdin");
-    if ( dup2(client, 1) < 0 )
+  if ( dup2(s_des, 0) < 0 )
+    perror("Dup stdin");  
+  if ( dup2(s_des, 1) < 0 )
     perror("Dup stdout");
-    if ( dup2(client, 2) < 0 )
+  if ( dup2(s_des, 2) < 0 )
     perror("Dup stderr");
-    read(0, buff, 255);
-    printf("Client: ");
-    printf("Connected: %s:%d\n", inet_ntoa(c_add.sin_addr), ntohs(c_add.sin_port));
-    puts(buff);
-    //buff[strlen(buff)]='\0';
-    write(stderr,system(buff), 1000);
-    exit(0);
-   
+
+  write(2,"Connected to me.",strlen("Connected to me.\0"));
+
+  while(1)
+    {
+     memset(buff,'\0',255);
+     read(0, buff, 255);
+     if(strcmp(buff,"quit") == 0)
+      {
+        close(s_des);
+        exit(0);
+      }   
+     else
+     {
+      system(buff);
+     }
   }
 }
